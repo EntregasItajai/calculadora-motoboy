@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Motoboy Pro</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#050505',
+                        card: '#13131f',
+                        neonGreen: '#39ff14',
+                        neonCyan: '#00ffff',
+                        neonRed: '#ff0055',
+                        neonOrange: '#ff9900',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: #e0e0e0; }
+        
+        .glass-panel {
+            background: rgba(19, 19, 31, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+        }
+
+        .input-neon:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-action {
+            background: linear-gradient(90deg, #00ffff, #0088ff);
+            transition: all 0.3s ease;
+        }
+        .btn-action:hover { box-shadow: 0 0 15px rgba(0, 255, 255, 0.4); transform: translateY(-1px); }
+
+        .btn-whats {
+            background: linear-gradient(45deg, #25D366, #128C7E);
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+        }
+        
+        #map { height: 280px; width: 100%; border-radius: 0.75rem; }
+        .hidden-el { display: none; }
+        
+        .ad-space {
+            border: 1px dashed #333;
+            transition: all 0.3s;
+        }
+        .ad-space:hover {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-4 px-4 pb-20">
+
+    <header class="w-full max-w-lg flex justify-between items-center mb-6 px-2">
+        <div>
+            <h1 class="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-neonCyan to-neonGreen">
+                CALCULADORA DE FRETE
+            </h1>
+            <p class="text-gray-500 text-[10px] tracking-widest">GESTÃO INTELIGENTE</p>
+        </div>
+        <button onclick="toggleSettings()" class="text-neonCyan hover:text-white transition p-2 border border-gray-800 rounded-lg bg-card">
+            <i class="fas fa-cog fa-lg"></i>
+        </button>
+    </header>
+
+    <main class="w-full max-w-lg space-y-6">
+
+        <div id="settings-panel" class="hidden-el glass-panel p-5 rounded-xl border border-neonCyan/30 mb-6 animate-fade-in">
+            <h3 class="text-neonCyan font-display font-bold mb-4 flex items-center gap-2 text-sm">
+                <i class="fas fa-sliders-h"></i> CONFIGURAR VALORES
+            </h3>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="text-neonGreen text-[10px] font-bold">PREÇO KM (CUSTO DA CORRIDA)</label>
+                    <input id="cfg-taxa-km" type="number" step="0.10" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white text-sm focus:border-neonGreen outline-none" value="0.50">
+                </div>
+                <div>
+                    <label class="text-neonGreen text-[10px] font-bold">PREÇO HORA (HONORÁRIOS)</label>
+                    <input id="cfg-taxa-hora" type="number" step="1.00" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white text-sm focus:border-neonGreen outline-none" value="50.00">
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 my-4 pt-2">
+                <p class="text-[10px] text-gray-500 mb-2 uppercase tracking-wider font-bold">Custos da Moto (Seu Controle)</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-neonOrange text-[10px] font-bold">MANUTENÇÃO (R$)</label>
+                        <input id="cfg-manutencao" type="number" step="0.01" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white text-sm focus:border-neonOrange outline-none" value="0.20">
+                    </div>
+                    <div>
+                        <label class="text-neonOrange text-[10px] font-bold">DEPRECIAÇÃO (R$)</label>
+                        <input id="cfg-depreciacao" type="number" step="0.01" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white text-sm focus:border-neonOrange outline-none" value="0.10">
+                    </div>
+                    <div>
+                        <label class="text-gray-400 text-[10px] font-bold">PREÇO GASOLINA</label>
+                        <input id="cfg-gasolina" type="number" step="0.01" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white text-sm outline-none" value="6.59">
+                    </div>
+                    <div>
+                        <label class="text-gray-400 text-[10px] font-bold">CONSUMO (KM/L)</label>
+                        <input id="cfg-consumo" type="number" step="1" class="w-full bg-black/60 border border-gray-700 rounded p-2 text-white text-sm outline-none" value="35">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="saveSettingsAndClose()" class="w-full mt-2 bg-gray-800 hover:bg-gray-700 text-white text-xs py-3 rounded transition font-bold tracking-wide">
+                SALVAR ALTERAÇÕES
+            </button>
+        </div>
+        
+        <div class="glass-panel rounded-2xl p-6 shadow-2xl">
+            
+            <div class="grid grid-cols-2 mb-4 bg-black/40 rounded-lg p-1">
+                <button onclick="switchTab('auto')" id="tab-auto" class="tab-btn active py-2 rounded-md font-bold text-[10px] sm:text-xs transition-colors text-white bg-gray-800 shadow">
+                    MAPA (AUTO)
+                </button>
+                <button onclick="switchTab('manual')" id="tab-manual" class="tab-btn py-2 rounded-md font-bold text-[10px] sm:text-xs transition-colors text-gray-500 hover:text-white">
+                    MANUAL
+                </button>
+            </div>
+
+            <div id="mode-auto">
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-neonCyan text-[10px] font-bold font-display tracking-wider">📍 ORIGEM (BASE)</label>
+                        <input id="origin" type="text" onblur="saveOrigin()" class="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-white text-sm input-neon" placeholder="Sua base...">
+                    </div>
+                    <div>
+                        <label class="text-neonGreen text-[10px] font-bold font-display tracking-wider">🏁 DESTINO</label>
+                        <input id="destination" type="text" class="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-white text-sm input-neon" placeholder="Endereço do cliente...">
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="returnTrip" class="w-4 h-4 accent-neonCyan rounded cursor-pointer">
+                        <label for="returnTrip" class="text-xs text-gray-400 select-none cursor-pointer">Ida e Volta</label>
+                    </div>
+
+                    <div id="map-container" class="mt-2 border border-gray-700 rounded-xl overflow-hidden relative">
+                        <div id="map"></div>
+                    </div>
+
+                    <button onclick="calculateRoute()" class="w-full btn-action text-black font-bold font-display py-3 rounded-xl mt-4 text-sm shadow-lg shadow-cyan-500/20">
+                        CALCULAR ROTA
+                    </button>
+                </div>
+            </div>
+
+            <div id="mode-manual" class="hidden-el">
+                <div class="space-y-5 py-4">
+                    <p class="text-gray-500 text-xs text-center mb-4">Insira os dados do painel da moto ou Waze.</p>
+                    
+                    <div>
+                        <label class="text-white text-[10px] font-bold font-display">DISTÂNCIA (KM)</label>
+                        <input id="manual-km" type="number" step="0.1" class="w-full bg-black/50 border border-gray-700 rounded-lg p-4 text-white input-neon text-lg" placeholder="Ex: 15.5">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-white text-[10px] font-bold font-display">HORAS</label>
+                            <input id="manual-hours" type="number" min="0" class="w-full bg-black/50 border border-gray-700 rounded-lg p-4 text-white input-neon text-lg" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-white text-[10px] font-bold font-display">MINUTOS</label>
+                            <input id="manual-min" type="number" min="0" max="59" class="w-full bg-black/50 border border-gray-700 rounded-lg p-4 text-white input-neon text-lg" placeholder="0">
+                        </div>
+                    </div>
+
+                    <button onclick="calculateManual()" class="w-full btn-action text-black font-bold font-display py-4 rounded-xl mt-6 text-sm">
+                        CALCULAR AGORA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full glass-panel rounded-xl p-3 text-center ad-space cursor-pointer hidden">
+            <p class="text-gray-500 text-xs font-bold">ESPAÇO PARA OFICINAS & PEÇAS</p>
+            <p class="text-[10px] text-gray-600">Anuncie aqui</p>
+        </div>
+
+        <div id="result-panel" class="hidden-el glass-panel rounded-2xl p-5 border-t-2 border-neonGreen animate-pulse-once">
+            
+            <div class="flex justify-between items-end mb-6 border-b border-gray-800 pb-4">
+                <div>
+                    <p class="text-gray-400 text-[10px] uppercase tracking-widest">FATURAMENTO (HONORÁRIOS)</p>
+                    <p id="res-price" class="text-4xl font-display font-bold text-neonGreen drop-shadow-[0_0_10px_rgba(57,255,20,0.5)]">R$ 0,00</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-500 text-[10px]">SEU LUCRO LÍQUIDO</p>
+                    <p id="res-profit" class="text-xl font-bold text-neonCyan">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="bg-black/40 rounded-lg p-3 mb-4 border border-gray-800">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-neonOrange text-[10px] font-bold uppercase"><i class="fas fa-wrench mr-1"></i> CUSTOS OPERACIONAIS</p>
+                    <p id="res-total-cost" class="text-neonOrange font-bold text-sm">R$ 0,00</p>
+                </div>
+                
+                <div class="space-y-1 text-xs text-gray-400">
+                    <div class="flex justify-between">
+                        <span>Combustível (<span id="lbl-liters">0L</span>)</span>
+                        <span id="res-cost-gas" class="text-white">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Manutenção (R$ 0,20/km)</span>
+                        <span id="res-cost-maint" class="text-white">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Depreciação (R$ 0,10/km)</span>
+                        <span id="res-cost-depr" class="text-white">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between text-[10px] text-gray-500 mb-6 px-1">
+                <span>Distância: <b id="res-total-dist" class="text-white">0 km</b></span>
+                <span>Tempo: <b id="res-total-time" class="text-white">0 min</b></span>
+            </div>
+
+            <button onclick="sendToWhatsApp()" class="w-full btn-whats text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg text-sm transition-transform active:scale-95">
+                <i class="fab fa-whatsapp text-lg"></i>
+                ENVIAR ORÇAMENTO
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="mt-8 text-gray-700 text-[10px] uppercase tracking-widest">
+        Soluções para Motofrete
+    </footer>
+
+    <script>
+        let map, directionsService, directionsRenderer;
+        let originInput, destinationInput;
+        let resultData = null;
+
+        // -- CARREGAR CONFIGURAÇÕES --
+        function loadSettings() {
+            const saved = JSON.parse(localStorage.getItem('motofrete_settings') || '{}');
+            if(saved.txKm) document.getElementById('cfg-taxa-km').value = saved.txKm;
+            if(saved.txHora) document.getElementById('cfg-taxa-hora').value = saved.txHora;
+            if(saved.manutencao) document.getElementById('cfg-manutencao').value = saved.manutencao;
+            if(saved.depreciacao) document.getElementById('cfg-depreciacao').value = saved.depreciacao;
+            if(saved.gasPrice) document.getElementById('cfg-gasolina').value = saved.gasPrice;
+            if(saved.consumption) document.getElementById('cfg-consumo').value = saved.consumption;
+        }
+
+        // -- SALVAR CONFIGURAÇÕES --
+        function saveSettingsAndClose() {
+            const settings = {
+                txKm: document.getElementById('cfg-taxa-km').value,
+                txHora: document.getElementById('cfg-taxa-hora').value,
+                manutencao: document.getElementById('cfg-manutencao').value,
+                depreciacao: document.getElementById('cfg-depreciacao').value,
+                gasPrice: document.getElementById('cfg-gasolina').value,
+                consumption: document.getElementById('cfg-consumo').value
+            };
+            localStorage.setItem('motofrete_settings', JSON.stringify(settings));
+            toggleSettings();
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.classList.toggle('hidden-el');
+        }
+
+        // -- INICIALIZAÇÃO DO MAPA --
+        function initMap() {
+            loadSettings();
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: { lat: -26.9078, lng: -48.6619 }, // Default Itajaí
+                disableDefaultUI: true,
+                styles: [
+                    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+                    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+                    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+                    { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+                    { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+                    { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+                ]
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                polylineOptions: { strokeColor: "#00ffff", strokeWeight: 5 }
+            });
+
+            const options = { componentRestrictions: { country: "br" } };
+            const originEl = document.getElementById("origin");
+            const destEl = document.getElementById("destination");
+
+            if (originEl && destEl) {
+                originInput = new google.maps.places.Autocomplete(originEl, options);
+                destinationInput = new google.maps.places.Autocomplete(destEl, options);
+
+                const savedOrigin = localStorage.getItem('motofrete_base_origin');
+                if (savedOrigin) originEl.value = savedOrigin;
+
+                originInput.addListener("place_changed", () => {
+                    const place = originInput.getPlace();
+                    if(place.formatted_address) saveOrigin(place.formatted_address);
+                });
+            }
+        }
+
+        function saveOrigin(val) {
+            const value = val || document.getElementById("origin").value;
+            if(value) localStorage.setItem('motofrete_base_origin', value);
+        }
+
+        function switchTab(mode) {
+            document.getElementById('mode-auto').classList.add('hidden-el');
+            document.getElementById('mode-manual').classList.add('hidden-el');
+            
+            document.getElementById('tab-auto').className = "tab-btn py-2 rounded-md font-bold text-[10px] sm:text-xs transition-colors text-gray-500 hover:text-white";
+            document.getElementById('tab-manual').className = "tab-btn py-2 rounded-md font-bold text-[10px] sm:text-xs transition-colors text-gray-500 hover:text-white";
+
+            document.getElementById('tab-' + mode).className = "tab-btn active py-2 rounded-md font-bold text-[10px] sm:text-xs transition-colors text-white bg-gray-800 shadow";
+            
+            document.getElementById('mode-' + mode).classList.remove('hidden-el');
+            document.getElementById('result-panel').classList.add('hidden-el');
+        }
+
+        function calculateRoute() {
+            const origin = document.getElementById("origin").value;
+            const destination = document.getElementById("destination").value;
+            const isReturn = document.getElementById("returnTrip").checked;
+
+            if (!origin || !destination) {
+                alert("Preencha os endereços!");
+                return;
+            }
+            saveOrigin();
+
+            const request = {
+                origin: origin,
+                destination: isReturn ? origin : destination,
+                waypoints: isReturn ? [{ location: destination, stopover: true }] : [],
+                travelMode: google.maps.TravelMode.DRIVING,
+                optimizeWaypoints: true
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    let totalKm = 0;
+                    let totalSec = 0;
+                    const legs = result.routes[0].legs;
+                    for (let i = 0; i < legs.length; i++) {
+                        totalKm += legs[i].distance.value;
+                        totalSec += legs[i].duration.value;
+                    }
+                    finishCalculation(totalKm / 1000, totalSec / 60);
+                } else {
+                    alert("Rota não encontrada.");
+                }
+            });
+        }
+
+        function calculateManual() {
+            const km = parseFloat(document.getElementById('manual-km').value);
+            const h = parseFloat(document.getElementById('manual-hours').value) || 0;
+            const m = parseFloat(document.getElementById('manual-min').value) || 0;
+
+            if (isNaN(km)) {
+                alert("Informe a distância.");
+                return;
+            }
+            const totalMin = (h * 60) + m;
+            finishCalculation(km, totalMin);
+        }
+
+        function finishCalculation(km, minutes) {
+            const txKm = parseFloat(document.getElementById('cfg-taxa-km').value) || 0.50;
+            const txHora = parseFloat(document.getElementById('cfg-taxa-hora').value) || 50.00;
+            const txManut = parseFloat(document.getElementById('cfg-manutencao').value) || 0.20;
+            const txDeprec = parseFloat(document.getElementById('cfg-depreciacao').value) || 0.10;
+            const gasPrice = parseFloat(document.getElementById('cfg-gasolina').value) || 6.59;
+            const consumption = parseFloat(document.getElementById('cfg-consumo').value) || 35;
+
+            const hoursFraction = minutes / 60;
+            const grossRevenue = (km * txKm) + (hoursFraction * txHora);
+
+            const litersNeeded = km / consumption;
+            const costGas = litersNeeded * gasPrice;
+            const costMaint = km * txManut;
+            const costDeprec = km * txDeprec;
+            const totalCost = costGas + costMaint + costDeprec;
+            const netProfit = grossRevenue - totalCost;
+
+            const fmt = (v) => "R$ " + v.toFixed(2).replace('.', ',');
+
+            document.getElementById('res-price').innerText = fmt(grossRevenue);
+            
+            const elProfit = document.getElementById('res-profit');
+            elProfit.innerText = fmt(netProfit);
+            elProfit.className = netProfit >= 0 ? "text-xl font-bold text-neonCyan" : "text-xl font-bold text-neonRed";
+            
+            document.getElementById('res-total-cost').innerText = fmt(totalCost);
+            document.getElementById('res-cost-gas').innerText = fmt(costGas);
+            document.getElementById('lbl-liters').innerText = litersNeeded.toFixed(2) + "L";
+            document.getElementById('res-cost-maint').innerText = fmt(costMaint);
+            document.getElementById('res-cost-depr').innerText = fmt(costDeprec);
+
+            document.getElementById('res-total-dist').innerText = km.toFixed(1) + " km";
+            document.getElementById('res-total-time').innerText = Math.round(minutes) + " min";
+            
+            document.getElementById('result-panel').classList.remove('hidden-el');
+
+            resultData = {
+                price: grossRevenue.toFixed(2).replace('.', ','),
+                km: km.toFixed(1),
+                time: Math.round(minutes)
+            };
+        }
+
+        function sendToWhatsApp() {
+            if (!resultData) return;
+            const text = `*Orçamento - Serviço Motofrete*%0A%0A` +
+                         `Valor Total: *R$ ${resultData.price}*%0A%0A` +
+                         `Confirme agora para garantirmos a prioridade do seu motoboy! 🚀`;
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+
+        window.initMap = initMap;
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBicls4QY0cuPsaLMQp5_5RUayvisAzy04&libraries=places&callback=initMap"></script>
+
+</body>
+</html>

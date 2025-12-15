@@ -396,6 +396,20 @@
             finishCalculation(km, totalMin);
         }
 
+        // -- NOVA FUNÇÃO: Formatar Horas e Minutos --
+        function formatDuration(totalMinutes) {
+            const minutesInt = Math.round(totalMinutes);
+            const h = Math.floor(minutesInt / 60);
+            const m = minutesInt % 60;
+
+            if (h > 0) {
+                // Adiciona zero à esquerda se for menor que 10 (ex: 6 h 05 min)
+                const mStr = m < 10 ? '0' + m : m;
+                return `${h} h ${mStr} min`;
+            }
+            return `${minutesInt} min`;
+        }
+
         function finishCalculation(km, minutes) {
             const txKm = parseFloat(document.getElementById('cfg-taxa-km').value) || 0.50;
             const txHora = parseFloat(document.getElementById('cfg-taxa-hora').value) || 50.00;
@@ -429,7 +443,9 @@
             document.getElementById('res-cost-depr').innerText = fmt(costDeprec);
 
             document.getElementById('res-total-dist').innerText = km.toFixed(1) + " km";
-            document.getElementById('res-total-time').innerText = Math.round(minutes) + " min";
+            
+            // -- AQUI ESTÁ A ALTERAÇÃO DE EXIBIÇÃO --
+            document.getElementById('res-total-time').innerText = formatDuration(minutes);
             
             document.getElementById('result-panel').classList.remove('hidden-el');
 
